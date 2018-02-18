@@ -6,14 +6,14 @@ import websockets
 import cv2
 import numpy as np
 
-#cv2.namedWindow("preview",cv2.WINDOW_NORMAL)
+cv2.namedWindow("preview",cv2.WINDOW_NORMAL)
 
 async def hello(websocket, path):
   imgenc = await websocket.recv()
   imgenc2 = np.frombuffer(imgenc,np.uint8)
   imgdec = cv2.imdecode(imgenc2,cv2.IMREAD_UNCHANGED)
-#  cv2.imshow("preview", imgdec)
-#  cv2.waitKey(1)
+  cv2.imshow("preview", imgdec)
+  cv2.waitKey(1)
   response = "OK"
   await websocket.send(response)
   #print("> {}".format(response))

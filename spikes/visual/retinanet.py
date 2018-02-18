@@ -27,7 +27,7 @@ def get_session():
 keras.backend.tensorflow_backend.set_session(get_session())
 
 # adjust this to point to your downloaded/trained model
-model_path = os.path.join('..', '..', 'models', 'resnet50_coco_best_v1.2.2.h5')
+model_path = os.path.join('..', '..', 'model', 'resnet50_coco_best_v1.2.2.h5')
 
 
 # load retinanet model
