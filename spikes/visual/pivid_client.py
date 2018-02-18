@@ -38,7 +38,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
   # show the frame
   cv2.imshow("Frame", image)
   cv2.waitKey(1)
-  if frame_count % 32 == 0:
+  if frame_count % 2 == 0:
       try:
         asyncio.get_event_loop().run_until_complete(send_frame(image))
       except:
