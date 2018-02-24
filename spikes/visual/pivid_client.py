@@ -11,9 +11,9 @@ import numpy as np
  
 # initialize the camera and grab a reference to the raw camera capture
 camera = PiCamera()
-camera.resolution = (320, 240)
+camera.resolution = (640, 480)
 camera.framerate = 32
-rawCapture = PiRGBArray(camera, size=(320, 240))
+rawCapture = PiRGBArray(camera, size=(640, 480))
   
 # allow the camera to warmup
 time.sleep(0.1)
