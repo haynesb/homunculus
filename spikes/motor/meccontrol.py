@@ -1,6 +1,22 @@
 import serial
 from time import sleep
 
+# Motors
+# Init:
+# DPM Pin Output
+# DPM Pin Output
+
+# AW Pin Value Time
+# DW Pin 0
+# DW Pin 1
+
+# A,D,D
+# 3,4,5
+# 6,7,8
+
+# rarm_pin 13
+# larm_pin 11
+
 
 class MECControl():
     def __init__(self, device='/dev/ttyUSB0', baud=9600,
