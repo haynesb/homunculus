@@ -26,10 +26,12 @@ class MECControl():
         self.baud = baud
         self.rarm = rarm_pin
         self.larm = larm_pin
+        self.lmotor = [3, 4, 5]
+        self.rmotor = [6, 7, 8]
 
     def send(self, command):
         self.serial.write(command)
-        sleep(0.15)
+        sleep(0)
         response = self.serial.readline()
         print(response)
 
@@ -39,6 +41,46 @@ class MECControl():
         self.send('V\n')
         self.send('MNI {}\n'.format(self.rarm))
         self.send('MNI {}\n'.format(self.larm))
+        self.send('DPM {} O\n'.format(self.lmotor[1]))
+        self.send('DPM {} O\n'.format(self.lmotor[2]))
+        self.send('DPM {} O\n'.format(self.rmotor[1]))
+        self.send('DPM {} O\n'.format(self.rmotor[2]))
+
+    def forward(self, duration=1):
+        self.send('DW {} 1'.format(self.lmotor[2]))
+        self.send('DW {} 1'.format(self.rmotor[2]))
+        self.send('AW {} 255 2000'.format(self.lmotor[0]))
+        self.send('AW {} 255 500'.format(self.rmotor[0]))
+        sleep(duration)
+        self.send('AW {} 0 2000'.format(self.lmotor[0]))
+        self.send('AW {} 0 500'.format(self.rmotor[0]))
+        self.send('DW {} 0'.format(self.lmotor[2]))
+        self.send('DW {} 0'.format(self.rmotor[2]))
+
+    def reverse(self, duration=1):
+        self.send('DW {} 1'.format(self.lmotor[1]))
+        self.send('DW {} 1'.format(self.rmotor[1]))
+        self.send('AW {} 255 2000'.format(self.lmotor[0]))
+        self.send('AW {} 255 500'.format(self.rmotor[0]))
+        sleep(duration)
+        self.send('AW {} 0 2000'.format(self.lmotor[0]))
+        self.send('AW {} 0 500'.format(self.rmotor[0]))
+        self.send('DW {} 0'.format(self.lmotor[1]))
+        self.send('DW {} 0'.format(self.rmotor[1]))
+
+    def turnright(self, angle=90):
+        self.send('DW {} 1'.format(self.lmotor[2]))
+        self.send('AW {} 255 0'.format(self.lmotor[0]))
+        sleep(angle/90.0)
+        self.send('AW {} 0 0'.format(self.lmotor[0]))
+        self.send('DW {} 0'.format(self.lmotor[2]))
+
+    def turnleft(self, angle=90):
+        self.send('DW {} 1'.format(self.rmotor[2]))
+        self.send('AW {} 255 0'.format(self.rmotor[0]))
+        sleep(angle/90.0)
+        self.send('AW {} 0 0'.format(self.rmotor[0]))
+        self.send('DW {} 0'.format(self.rmotor[2]))
 
     def move_arm(self, rarm=True, shoulder_pos=90, elbow_pos=90):
         pin = self.rarm
@@ -47,7 +89,11 @@ class MECControl():
             shoulder_pos = 240 - shoulder_pos
             elbow_pos = 240 - elbow_pos
         self.send('MNSSMP {0} {1} {2} {3}'.format(pin, 0,
-                                                  shoulder_pos, 2000))
+                                                  shoulder_pos, 250))
 
         self.send('MNSSMP {0} {1} {2} {3}'.format(pin, 1,
-                                                  elbow_pos, 2000))
+                                                  elbow_pos, 250))
+
+
+m = MECControl()
+m.initialize()
