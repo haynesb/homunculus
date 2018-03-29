@@ -19,7 +19,7 @@ from time import sleep
 
 
 class MECControl():
-    def __init__(self, device='/dev/ttyUSB0', baud=9600,
+    def __init__(self, device='/dev/ttyUSB0', baud=57600,
                  rarm_pin=13, rarm_nserv=2, larm_pin=11, larm_nserv=2):
         self.serial = None
         self.device = device
@@ -30,6 +30,8 @@ class MECControl():
         self.rmotor = [6, 7, 8]
 
     def send(self, command):
+        print(command)
+        command = command.encode('utf-8')
         self.serial.write(command)
         sleep(0)
         response = self.serial.readline()
@@ -47,40 +49,59 @@ class MECControl():
         self.send('DPM {} O\n'.format(self.rmotor[2]))
 
     def forward(self, duration=1):
-        self.send('DW {} 1'.format(self.lmotor[2]))
-        self.send('DW {} 1'.format(self.rmotor[2]))
-        self.send('AW {} 255 2000'.format(self.lmotor[0]))
-        self.send('AW {} 255 500'.format(self.rmotor[0]))
+        command = 'DW {} 1\n'.format(self.lmotor[2])
+        command += 'DW {} 1\n'.format(self.rmotor[2])
+        command += 'AW {} 200 1\n'.format(self.lmotor[0])
+        command += 'AW {} 200 1\n'.format(self.rmotor[0])
+        self.send(command)
         sleep(duration)
-        self.send('AW {} 0 2000'.format(self.lmotor[0]))
-        self.send('AW {} 0 500'.format(self.rmotor[0]))
-        self.send('DW {} 0'.format(self.lmotor[2]))
-        self.send('DW {} 0'.format(self.rmotor[2]))
+        command += 'AW {} 0 1\n'.format(self.lmotor[0])
+        command += 'AW {} 0 1\n'.format(self.rmotor[0])
+        command = 'DW {} 0\n'.format(self.lmotor[2])
+        command += 'DW {} 0\n'.format(self.rmotor[2])
+        self.send(command)
 
     def reverse(self, duration=1):
-        self.send('DW {} 1'.format(self.lmotor[1]))
-        self.send('DW {} 1'.format(self.rmotor[1]))
-        self.send('AW {} 255 2000'.format(self.lmotor[0]))
-        self.send('AW {} 255 500'.format(self.rmotor[0]))
+        command = 'DW {} 1\n'.format(self.lmotor[1])
+        command += 'DW {} 1\n'.format(self.rmotor[1])
+        command += 'AW {} 200 1\n'.format(self.lmotor[0])
+        command += 'AW {} 200 1\n'.format(self.rmotor[0])
+        self.send(command)
         sleep(duration)
-        self.send('AW {} 0 2000'.format(self.lmotor[0]))
-        self.send('AW {} 0 500'.format(self.rmotor[0]))
-        self.send('DW {} 0'.format(self.lmotor[1]))
-        self.send('DW {} 0'.format(self.rmotor[1]))
+        command += 'AW {} 0 1\n'.format(self.lmotor[0])
+        command += 'AW {} 0 1\n'.format(self.rmotor[0])
+        command = 'DW {} 0\n'.format(self.lmotor[1])
+        command += 'DW {} 0\n'.format(self.rmotor[1])
+        self.send(command)
 
     def turnright(self, angle=90):
-        self.send('DW {} 1'.format(self.lmotor[2]))
-        self.send('AW {} 255 0'.format(self.lmotor[0]))
+        command = 'DW {} 1\n'.format(self.lmotor[2])
+        command += 'DW {} 1\n'.format(self.rmotor[1])
+        command += 'AW {} 150 1\n'.format(self.lmotor[0])
+        command += 'AW {} 150 1\n'.format(self.rmotor[0])
+        self.send(command)
         sleep(angle/90.0)
-        self.send('AW {} 0 0'.format(self.lmotor[0]))
-        self.send('DW {} 0'.format(self.lmotor[2]))
+        command += 'AW {} 0 1\n'.format(self.lmotor[0])
+        command += 'AW {} 0 1\n'.format(self.rmotor[0])
+        command = 'DW {} 0\n'.format(self.lmotor[2])
+        command += 'DW {} 0\n'.format(self.rmotor[1])
+        self.send(command)
+
+
+
 
     def turnleft(self, angle=90):
-        self.send('DW {} 1'.format(self.rmotor[2]))
-        self.send('AW {} 255 0'.format(self.rmotor[0]))
+        command = 'DW {} 1\n'.format(self.lmotor[1])
+        command += 'DW {} 1\n'.format(self.rmotor[2])
+        command += 'AW {} 150 1\n'.format(self.lmotor[0])
+        command += 'AW {} 150 1\n'.format(self.rmotor[0])
+        self.send(command)
         sleep(angle/90.0)
-        self.send('AW {} 0 0'.format(self.rmotor[0]))
-        self.send('DW {} 0'.format(self.rmotor[2]))
+        command += 'AW {} 0 1\n'.format(self.lmotor[0])
+        command += 'AW {} 0 1\n'.format(self.rmotor[0])
+        command = 'DW {} 0\n'.format(self.lmotor[1])
+        command += 'DW {} 0\n'.format(self.rmotor[2])
+        self.send(command)
 
     def move_arm(self, rarm=True, shoulder_pos=90, elbow_pos=90):
         pin = self.rarm
@@ -97,3 +118,4 @@ class MECControl():
 
 m = MECControl()
 m.initialize()
+
