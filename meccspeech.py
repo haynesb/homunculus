@@ -33,14 +33,9 @@ def callback(data):
     rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
     m.say(data.data)
 
-def listener():
+def tts_listener():
 
-    # In ROS, nodes are uniquely named. If two nodes with the same
-    # name are launched, the previous one is kicked off. The
-    # anonymous=True flag means that rospy will choose a unique
-    # name for our 'listener' node so that multiple listeners can
-    # run simultaneously.
-    rospy.init_node('listener', anonymous=True)
+    rospy.init_node('tts_listener', anonymous=True)
 
     rospy.Subscriber('tts', String, callback)
 
@@ -48,4 +43,4 @@ def listener():
     rospy.spin()
 
 if __name__ == '__main__':
-    listener()
+    tts_listener()
