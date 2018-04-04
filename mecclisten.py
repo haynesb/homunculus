@@ -1,9 +1,13 @@
+#!/usr/bin/env python
+
+import rospy
+from std_msgs.msg import String
+
 from snowboy import snowboydecoder
 import sys
 import signal
 
 import speech_recognition as sr
-from os import path
 
 r = sr.Recognizer()
 
@@ -33,6 +37,9 @@ signal.signal(signal.SIGINT, signal_handler)
 detector = snowboydecoder.HotwordDetector(model, sensitivity=0.5)
 print('Listening... Press Ctrl+C to exit')
 
+pub = rospy.Publisher('stt', String, queue_size=10)
+rospy.init_node('talker', anonymous=True)
+
 def google_stt(fname):
     with sr.AudioFile(fname) as source:
         audio = r.record(source)  # read the entire audio file
@@ -40,7 +47,11 @@ def google_stt(fname):
         # for testing purposes, we're just using the default API key
         # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
         # instead of `r.recognize_google(audio)`
-        print("Google Speech Recognition thinks you said " + r.recognize_google(audio))
+        stt_result = r.recognize_google(audio)
+        print("Google Speech Recognition thinks you said " + stt_result)
+        rospy.loginfo(stt_result)
+        pub.publish(stt_result)
+
     except sr.UnknownValueError:
         print("Google Speech Recognition could not understand audio")
     except sr.RequestError as e:
