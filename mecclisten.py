@@ -1,0 +1,58 @@
+from snowboy import snowboydecoder
+import sys
+import signal
+
+import speech_recognition as sr
+from os import path
+
+r = sr.Recognizer()
+
+
+interrupted = False
+
+
+def signal_handler(signal, frame):
+    global interrupted
+    interrupted = True
+
+
+def interrupt_callback():
+    global interrupted
+    return interrupted
+
+if len(sys.argv) == 1:
+    print("Error: need to specify model name")
+    print("Usage: python demo.py your.model")
+    sys.exit(-1)
+
+model = sys.argv[1]
+
+# capture SIGINT signal, e.g., Ctrl+C
+signal.signal(signal.SIGINT, signal_handler)
+
+detector = snowboydecoder.HotwordDetector(model, sensitivity=0.5)
+print('Listening... Press Ctrl+C to exit')
+
+def google_stt(fname):
+    with sr.AudioFile(fname) as source:
+        audio = r.record(source)  # read the entire audio file
+    try:
+        # for testing purposes, we're just using the default API key
+        # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
+        # instead of `r.recognize_google(audio)`
+        print("Google Speech Recognition thinks you said " + r.recognize_google(audio))
+    except sr.UnknownValueError:
+        print("Google Speech Recognition could not understand audio")
+    except sr.RequestError as e:
+        print("Could not request results from Google Speech Recognition service; {0}".format(e))
+
+# main loop
+detector.start(detected_callback=snowboydecoder.play_audio_file,
+               interrupt_check=interrupt_callback,
+               sleep_time=0.03,
+               audio_recorder_callback=google_stt,
+               silent_count_threshold=10,
+               recording_timeout=20,
+               audio_save_path="/home/bhaynes/catkin_ws/cache/stt/")
+
+detector.terminate()

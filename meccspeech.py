@@ -3,11 +3,16 @@
 import rospy
 from std_msgs.msg import String
 
+import sys
+print('\n'.join(sys.path))
+
 import time
 import pygame
-from gtts import gTTS
+import gtts
 import hashlib
 import os.path
+
+import sys
 
 class MECCSpeech():
     def __init__(self):
@@ -15,9 +20,9 @@ class MECCSpeech():
 
     def say(self, ttstext):
         
-        ttsfile =  "cache/tts/" + hashlib.md5(ttstext).hexdigest() + ".mp3"
+        ttsfile =  "cache/tts/" + hashlib.md5(ttstext.encode('utf-8')).hexdigest() + ".mp3"
         if not os.path.isfile(ttsfile):
-            tts = gTTS(text=ttstext, lang='en')
+            tts = gtts.gTTS(text=ttstext, lang='en')
             tts.save(ttsfile)
         
         pygame.mixer.music.load(ttsfile)
