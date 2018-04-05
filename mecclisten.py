@@ -38,7 +38,7 @@ detector = snowboydecoder.HotwordDetector(model, sensitivity=0.5)
 print('Listening... Press Ctrl+C to exit')
 
 pub = rospy.Publisher('stt', String, queue_size=10)
-rospy.init_node('talker', anonymous=True)
+rospy.init_node('mecclisten', anonymous=True)
 
 def google_stt(fname):
     with sr.AudioFile(fname) as source:

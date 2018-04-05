@@ -40,7 +40,7 @@ def callback(data):
 
 def tts_listener():
 
-    rospy.init_node('tts_listener', anonymous=True)
+    rospy.init_node('meccspeech', anonymous=True)
 
     rospy.Subscriber('tts', String, callback)
 
