@@ -37,10 +37,12 @@ signal.signal(signal.SIGINT, signal_handler)
 detector = snowboydecoder.HotwordDetector(model, sensitivity=0.5)
 print('Listening... Press Ctrl+C to exit')
 
-pub = rospy.Publisher('stt', String, queue_size=10)
+motionpub = rospy.Publisher('motion', String, queue_size=10)
+sttpub = rospy.Publisher('stt', String, queue_size=10)
 rospy.init_node('mecclisten', anonymous=True)
 
 def google_stt(fname):
+    motionpub.publish("EYECOLOR 0 7 0 0")
     with sr.AudioFile(fname) as source:
         audio = r.record(source)  # read the entire audio file
     try:
@@ -50,7 +52,9 @@ def google_stt(fname):
         stt_result = r.recognize_google(audio)
         print("Google Speech Recognition thinks you said " + stt_result)
         rospy.loginfo(stt_result)
-        pub.publish(stt_result)
+        sttpub.publish(stt_result)
+        motionpub.publish("EYECOLOR 0 0 7 0")
+
 
     except sr.UnknownValueError:
         print("Google Speech Recognition could not understand audio")
@@ -62,7 +66,7 @@ detector.start(detected_callback=snowboydecoder.play_audio_file,
                interrupt_check=interrupt_callback,
                sleep_time=0.03,
                audio_recorder_callback=google_stt,
-               silent_count_threshold=10,
+               silent_count_threshold=1,
                recording_timeout=20,
                audio_save_path="/home/bhaynes/catkin_ws/cache/stt/")
 

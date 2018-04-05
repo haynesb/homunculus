@@ -2,8 +2,8 @@ forward:
     phrases: ["come here", "come forward", "forward"]
     actions: ["motion FORWARD 3","tts Ok"]
 reverse:
-    phrases: ["reverse", "back", "back up"]
-    actions: ["REVERSE 3","tts Ok"]
+    phrases: ["reverse", "back", "backup"]
+    actions: ["motion REVERSE 3","tts Ok"]
 turn180:
     phrases: ["turn around"]
     actions: ["motion TURNRIGHT 180"]
@@ -26,10 +26,10 @@ spin:
     phrases: ["spin around", "spin", "get dizzy"]
     actions: ["motion TURNRIGHT"]
 whereareyou:
-    phrases: ["where are you", "where do you think you are","where are we"]
+    phrases: ["do you know what this place is"]
     actions: ["tts I think I am at the Maker's Fair at Sycamore Springs Elementary"]
 whatdoyousee:
-    phrases: ["what do you see", "what is this", "what is that"]
+    phrases: ["what do you see", "do you see anything interesting"]
     actions: ["motion POINT", "tts Hmm. I don't know. What is that?"]
 whomaker:
     phrases: ["who is your maker", "who made you"]

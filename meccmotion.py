@@ -195,9 +195,9 @@ class MECCMotion():
                 self.turnright(float(cmd[1]))
         elif cmd[0] == 'TURNLEFT':
             if len(cmd)==1:
-                self.turnright(None)
+                self.turnleft(None)
             else:
-                self.turnright(float(cmd[1]))
+                self.turnleft(float(cmd[1]))
         elif cmd[0] == 'POINT':
             m.point()
         elif cmd[0] == 'WAVE':
@@ -207,6 +207,8 @@ class MECCMotion():
         elif cmd[0] == 'HUG':
             print('Cannot hug until you fix the power source for my servos :(')
             #m.hug()
+        elif cmd[0] == 'EYECOLOR':
+            self.eye_color(int(cmd[1]), int(cmd[2]), int(cmd[3]), int(cmd[4]))
         else:
             print('Unrecognized command {}'.format(cmd[0]))
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-#import rospy
-#from std_msgs.msg import String
+import rospy
+from std_msgs.msg import String
 
 import nltk.corpus
 import nltk.tokenize
@@ -32,7 +32,7 @@ def jaccard_similarity(phrase, tokens):
     return ratio
 
 # Load command set:
-filestr = file('resources/commands.yml')
+filestr = file('src/homunculus/resources/commands.yml')
 commands = yaml.load(filestr)
 
 
@@ -66,14 +66,14 @@ def stt_callback(data):
     rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
     cmdid = phrase2command(str(data.data))
     if cmdid is None:
-        sttpub.publish("I didn't understand what you said.")
+        ttspub.publish("I didn't understand what you said.")
 
     for action in commands[cmdid]['actions']:
         action = action.split(' ', 1)
         if action[0] == 'motion':
             motionpub.publish(action[1])
         elif action[0] == 'tts':
-            sttpub.publish(action[1])
+            ttspub.publish(action[1])
            
 
 def meccontroller():
