@@ -61,6 +61,8 @@ def phrase2command(phrase, threshold = 0.5):
 # Initialize publishers:
 ttspub = rospy.Publisher('tts', String, queue_size=10)
 motionpub = rospy.Publisher('motion', String, queue_size=10)
+visionpub = rospy.Publisher('vision', String, queue_size=10)
+
 
 def stt_callback(data):
     rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
