@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import rospy
 from std_msgs.msg import String
+from sensor_msgs.msg import CompressedImage
+import pickle
 
 # import keras
 import keras
@@ -13,7 +15,6 @@ from keras_retinanet.utils.colors import label_color
 
 
 # import miscellaneous modules
-import matplotlib.pyplot as plt
 import cv2
 import os
 import numpy as np
@@ -77,7 +78,6 @@ def predict(image):
 
 def annotate(image, predictions):
     draw = image.copy()
-    #draw = cv2.cvtColor(draw, cv2.COLOR_BGR2RGB)
 
     for prediction in predictions:
         c = prediction[0]
@@ -92,33 +92,38 @@ def annotate(image, predictions):
     return draw
 
 # load image
-image = read_image_bgr('src/homunculus/data/000000008021.jpg')
-cv2.namedWindow("preview",cv2.WINDOW_NORMAL)
-
-preds = predict(image)
-animg = annotate(image,preds)
-cv2.imshow("preview", animg)
-cv2.waitKey(0)
-
+image_np = read_image_bgr('src/homunculus/data/000000008021.jpg')
+preds = predict(image_np)
+animg = annotate(image_np,preds)
 
 # Initialize publishers:
-ttspub = rospy.Publisher('tts', String, queue_size=10)
-motionpub = rospy.Publisher('motion', String, queue_size=10)
+ttspub = rospy.Publisher('tts', String, queue_size=1)
+motionpub = rospy.Publisher('motion', String, queue_size=1)
+visionannotpub = rospy.Publisher('visionannot', String, queue_size=1)
 
 def vision_callback(data):
     rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
+    image_np = read_image_bgr('current_view.jpg')
+    preds = predict(image_np)
     objects = [pred[0] for pred in preds]
-    ttspub.publish("I see a " + objects.join(', '))
+    ttspub.publish("I see a " + ', '.join(objects))
+    visionannotpub.publish(pickle.dumps([time.time(),preds]))
 
+def image_callback(data):
+    np_arr = np.fromstring(data.data, np.uint8)
+    image_np = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+    # There has to be a better way of passing this to shared memory .. TBD
+    cv2.imwrite('current_view.jpg',image_np)
+    
 
 def meccvision():
 
-    rospy.init_node('meccontroller', anonymous=True)
+    rospy.init_node('meccvision', anonymous=True)
 
     rospy.Subscriber('vision', String, vision_callback)
+    rospy.Subscriber('/raspicam_node/image/compressed', CompressedImage, image_callback, queue_size = 1)
 
     ttspub.publish("Vision system online")
-    print (preds)
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
 
