@@ -67,6 +67,7 @@ def stt_callback(data):
     cmdid = phrase2command(str(data.data))
     if cmdid is None:
         ttspub.publish("I didn't understand what you said.")
+        return
 
     for action in commands[cmdid]['actions']:
         action = action.split(' ', 1)
@@ -74,6 +75,8 @@ def stt_callback(data):
             motionpub.publish(action[1])
         elif action[0] == 'tts':
             ttspub.publish(action[1])
+        elif action[0] == 'vision':
+            visionpub.publish(action[1])
            
 
 def meccontroller():
