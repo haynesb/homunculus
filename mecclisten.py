@@ -39,7 +39,10 @@ print('Listening... Press Ctrl+C to exit')
 
 motionpub = rospy.Publisher('motion', String, queue_size=10)
 sttpub = rospy.Publisher('stt', String, queue_size=10)
+ttspub = rospy.Publisher('tts', String, queue_size=10)
+
 rospy.init_node('mecclisten', anonymous=True)
+
 
 def google_stt(fname):
     motionpub.publish("EYECOLOR 0 7 0 0")
@@ -58,8 +61,13 @@ def google_stt(fname):
 
     except sr.UnknownValueError:
         print("Google Speech Recognition could not understand audio")
+        ttspub.publish("I'm sorry, I couldn't understand what you said.")
+        motionpub.publish("EYECOLOR 0 0 7 0")
+
     except sr.RequestError as e:
         print("Could not request results from Google Speech Recognition service; {0}".format(e))
+        ttspub.publish("I am having trouble thinking right now. Electromagnetic disturbances tend to have that affect on me.")
+        motionpub.publish("EYECOLOR 0 0 7 0")
 
 # main loop
 detector.start(detected_callback=snowboydecoder.play_audio_file,

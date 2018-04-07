@@ -30,7 +30,19 @@ whereareyou:
     actions: ["tts I think I am at the Maker's Fair at Sycamore Springs Elementary"]
 whatdoyousee:
     phrases: ["what do you see", "do you see anything interesting"]
-    actions: ["motion POINT", "tts Hmm. I don't know. What is that?"]
+    actions: ["tts One moment, let me think about that.", "vision describe"]
 whomaker:
     phrases: ["who is your maker", "who made you"]
-    actions: ["tts I was made by Unkita Haynes. With a little bit of help from her Dad."]
+    actions: ["tts I was made by Unkita Haynes. With love and care."]
+whomeccanoid:
+    phrases: ["who is meccanoid"]
+    actions: ["tts Hey that's me!"]
+areyoufamous:
+    phrases: ["are you famous"]
+    actions: ["tts Yes!"]
+girlfriend:
+    phrases: ["do you have a girlfriend"]
+    actions: ["tts Yes I do. She is a Russian Twitter Bot."]
+bestfriend:
+    phrases: ["who is your best friend"]
+    actions: ["tts She is standing right here. Her name is Unkita Kelly Haynes"]
