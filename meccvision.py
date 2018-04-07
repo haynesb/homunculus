@@ -2,7 +2,6 @@
 import rospy
 from std_msgs.msg import String
 from sensor_msgs.msg import CompressedImage
-import pickle
 
 # import keras
 import keras
@@ -10,8 +9,6 @@ import keras
 # import keras_retinanet
 from keras_retinanet.models.resnet import custom_objects
 from keras_retinanet.utils.image import read_image_bgr, preprocess_image, resize_image
-from keras_retinanet.utils.visualization import draw_box, draw_caption
-from keras_retinanet.utils.colors import label_color
 
 
 # import miscellaneous modules
@@ -23,10 +20,11 @@ import time
 # set tf backend to allow memory to grow, instead of claiming everything
 import tensorflow as tf
 
+
 def get_session():
-  config = tf.ConfigProto()
-  config.gpu_options.allow_growth = True
-  return tf.Session(config=config)
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    return tf.Session(config=config)
 
 # use this environment flag to change which GPU to use
 #os.environ["CUDA_VISIBLE_DEVICES"] = "1"
@@ -36,7 +34,6 @@ keras.backend.tensorflow_backend.set_session(get_session())
 
 # adjust this to point to your downloaded/trained model
 model_path = os.path.join('src', 'homunculus', 'model', 'resnet50_coco_best_v2.0.2.h5')
-
 
 # load retinanet model
 model = keras.models.load_model(model_path, custom_objects=custom_objects)
@@ -75,26 +72,20 @@ def predict(image):
     
     return predictions
 
-
-def annotate(image, predictions):
-    draw = image.copy()
-
-    for prediction in predictions:
-        c = prediction[0]
-        s = prediction[1]
-        b = prediction[2]
-
-        cv2.rectangle(draw, (b[0], b[1]), (b[2], b[3]), (0, 0, 255), 3)
-        caption = "{} {:.3f}".format(c, s)
-        cv2.putText(draw, caption, (b[0], b[1] - 10), cv2.FONT_HERSHEY_PLAIN, 1.5, (0, 0, 0), 3)
-        cv2.putText(draw, caption, (b[0], b[1] - 10), cv2.FONT_HERSHEY_PLAIN, 1.5, (255, 255, 255), 2)
-
-    return draw
+def write_preds(preds,outfile):
+    ctime = time.time()
+    header = 'ctime,object,score,lx,by,rx,ty\n'
+    def pred2csl(pred):
+        return str(ctime)+','+pred[0]+','+str(pred[1])+','+','.join([str(x) for x in pred[2]])
+    output = header + '\n'.join([pred2csl(pred) for pred in preds]) + '\n'
+    f= open(outfile,"w")
+    f.write(output)
+    f.close() 
 
 # load image
 image_np = read_image_bgr('src/homunculus/data/000000008021.jpg')
 preds = predict(image_np)
-animg = annotate(image_np,preds)
+
 
 # Initialize publishers:
 ttspub = rospy.Publisher('tts', String, queue_size=1)
@@ -103,11 +94,18 @@ visionannotpub = rospy.Publisher('visionannot', String, queue_size=1)
 
 def vision_callback(data):
     rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
+    motionpub.publish("EYECOLOR 7 0 0 0")
     image_np = read_image_bgr('current_view.jpg')
     preds = predict(image_np)
+    if len(preds)==0:
+        ttspub.publish("I am not sure. What is this I am seeing?")
+        return
     objects = [pred[0] for pred in preds]
+    motionpub.publish("EYECOLOR 0 0 7 0")
     ttspub.publish("I see a " + ', '.join(objects))
-    visionannotpub.publish(pickle.dumps([time.time(),preds]))
+    write_preds(preds,'object_preds.csv')
+
+
 
 def image_callback(data):
     np_arr = np.fromstring(data.data, np.uint8)

@@ -2,7 +2,6 @@
 import rospy
 from std_msgs.msg import String
 from sensor_msgs.msg import CompressedImage
-import pickle
 
 # import miscellaneous modules
 import matplotlib.pyplot as plt
@@ -10,14 +9,23 @@ import cv2
 import os
 import numpy as np
 import time
+import pandas as pd
+
 
 def annotate(image, predictions):
+    if len(predictions.index) == 0:
+        return image
+    if time.time() - predictions.iloc[0]['ctime'] > 10:
+        return image
     draw = image.copy()
 
-    for prediction in predictions:
-        c = prediction[0]
-        s = prediction[1]
-        b = prediction[2]
+    for idx in range(0, len(predictions.index)):
+        c = str(predictions.iloc[idx]['object'])
+        s = predictions.iloc[idx]['score']
+        b = [predictions.iloc[idx]['lx'],
+                 predictions.iloc[idx]['by'],
+                 predictions.iloc[idx]['rx'],
+                 predictions.iloc[idx]['ty']]
 
         cv2.rectangle(draw, (b[0], b[1]), (b[2], b[3]), (0, 0, 255), 3)
         caption = "{} {:.3f}".format(c, s)
@@ -28,29 +36,22 @@ def annotate(image, predictions):
 
 def image_callback(data):
     print('Recieved image')
-    cv2.namedWindow("preview",cv2.WINDOW_NORMAL)
+    cv2.namedWindow("preview", cv2.WINDOW_NORMAL)
     np_arr = np.fromstring(data.data, np.uint8)
     image_np = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-    if os.path.isfile('visionannot.pkl'): 
-        visionannot = pickle.load(open('visionannot.pkl','rb'))
-        image_np = annotate(image_np,visionannot[1])
+    if os.path.isfile('object_preds.csv'):
+        print('annotation exists')
+        preds = pd.read_csv('object_preds.csv')
+        image_np = annotate(image_np, preds)
 
     cv2.imshow("preview", image_np)
     cv2.waitKey(1)
-
-def visionannot_callback(data):
-    print('Received annot')
-    annotfile = open('visionannot.pkl', 'wb')
-    print(pickle.dumps(data.data))
-    pickle.dump(annotfile, data.data)
-    annotfile.close()
 
     
 def mecccamera():
     rospy.init_node('mecccamera', anonymous=True)
     rospy.Subscriber('/raspicam_node/image/compressed', CompressedImage, image_callback, queue_size = 1)
-    rospy.Subscriber('visionannot', String, visionannot_callback)
     rospy.spin()
 
 if __name__ == '__main__':
