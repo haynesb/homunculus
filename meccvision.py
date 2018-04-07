@@ -20,6 +20,7 @@ import time
 # set tf backend to allow memory to grow, instead of claiming everything
 import tensorflow as tf
 
+from pattern.en import pluralize
 
 def get_session():
     config = tf.ConfigProto()
@@ -86,6 +87,15 @@ def write_preds(preds,outfile):
 image_np = read_image_bgr('src/homunculus/data/000000008021.jpg')
 preds = predict(image_np)
 
+def pluralize_tokens(tokens):
+    tokset = set(tokens)
+    def tokpluralize(objs):
+        if len(objs)==1:
+            return objs[0]
+        else:
+            return str(len(objs)) + ' ' + pluralize(objs[0])
+    return [tokpluralize(filter(lambda x: x==tok, tokens)) for tok in list(tokset)]
+
 
 # Initialize publishers:
 ttspub = rospy.Publisher('tts', String, queue_size=1)
@@ -100,9 +110,14 @@ def vision_callback(data):
     if len(preds)==0:
         ttspub.publish("I am not sure. What is this I am seeing?")
         return
-    objects = [pred[0] for pred in preds]
     motionpub.publish("EYECOLOR 0 0 7 0")
-    ttspub.publish("I see a " + ', '.join(objects))
+    
+    objects = pluralize_tokens([pred[0] for pred in preds])
+    if len(objects)==1:
+        ttspub.publish("I see a " + objects[0])
+    else:
+        ttspub.publish("I see a " + ', '.join(objects[:-1]) + ', and a ' + objects[-1])
+
     write_preds(preds,'object_preds.csv')
 
 
