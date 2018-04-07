@@ -30,7 +30,7 @@ whereareyou:
     actions: ["tts I think I am at the Maker's Fair at Sycamore Springs Elementary"]
 whatdoyousee:
     phrases: ["what do you see", "do you see anything interesting"]
-    actions: ["vision describe"]
+    actions: ["tts One moment, let me think about that.", "vision describe"]
 whomaker:
     phrases: ["who is your maker", "who made you"]
     actions: ["tts I was made by Unkita Haynes. With love and care."]
